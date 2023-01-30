@@ -13,7 +13,7 @@ to divide this frame into 7 two week sprints.
 A reasonable resource amount is 10 hours a week, so 20 hours each sprint.
 This totals at 140 hours.
 
-## Detailed schedule
+## Schedule summary
 
 * **S1** - 02.06-02.19 - Implement frame of the system, data handling
 * **S2** - 02.20-03.05 - Implement normalization, representation, similarity measures
@@ -22,3 +22,20 @@ This totals at 140 hours.
 * **S5** - 04.03-04.16 - Raise new questions, scenarios, test them
 * **S6** - 04.17-04.30 - Write about previous
 * **S7** - 05.01-05.14 - Final touches and corrections
+
+## Detailed summary
+
+### **S1** (02.06-02.19)
+
+#### Theory (approx. 10 hours)
+
+* Chapter 2 - Time series in general, clustering in general - (~3 hours)
+* Chapter 2 - Similarity/Dissimilarity measures (~3 hours)
+* Chapter 2 - Normailzatation (~2 hours)
+* Chapter 2 - Representation (~2 hours)
+
+#### Implementation (approx. 7 hours)
+
+* Application frame - (~2 hours)
+* Database integration - (~2 hours)
+* Main models (time series, data points, etc.) (~3 hours)
