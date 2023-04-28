@@ -1,0 +1,11 @@
+ktor:
+    application:
+        modules:
+            - hu.gurubib.ApplicationKt.module
+    deployment:
+        port: 9080
+
+jdbc:
+    db: kluster
+    user: kluster
+    password: retsulk
