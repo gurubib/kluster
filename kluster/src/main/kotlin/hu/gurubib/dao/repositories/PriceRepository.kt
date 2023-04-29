@@ -12,6 +12,8 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 
 interface PriceRepository : ExposedCrudRepository<Int, PPrice> {
     val db: Database
+
+    suspend fun findByUuid(uuid: String): PPrice?
 }
 
 class PriceRepositoryImpl(

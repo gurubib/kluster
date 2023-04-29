@@ -11,6 +11,8 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 
 interface FetchQueryRepository : ExposedCrudRepository<Int, PFetchQuery> {
     val db: Database
+
+    suspend fun findByUuid(uuid: String): PFetchQuery?
 }
 
 class FetchQueryRepositoryImpl(override val db: Database, ) : FetchQueryRepository {

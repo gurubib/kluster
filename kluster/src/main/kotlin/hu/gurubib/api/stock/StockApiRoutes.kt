@@ -1,9 +1,9 @@
 package hu.gurubib.api.stock
 
 import hu.gurubib.api.cluster.services.FetchQueryService
-import hu.gurubib.api.stock.dtos.RCreateFetchQueryReq
-import hu.gurubib.api.stock.dtos.domain
-import hu.gurubib.api.stock.dtos.dto
+import hu.gurubib.api.cluster.services.MarketIndexService
+import hu.gurubib.api.cluster.services.StockService
+import hu.gurubib.api.stock.dtos.*
 import hu.gurubib.plugins.API_ROOT_PATH
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -17,6 +17,25 @@ import org.koin.ktor.ext.inject
 const val STOCK_API_VERSION = "v1"
 const val STOCK_API_NAME = "stock"
 const val STOCK_API_PATH = "${API_ROOT_PATH}/${STOCK_API_NAME}/${STOCK_API_VERSION}"
+
+fun Route.configureStockRoutes() {
+    val service: StockService by inject()
+
+    post<Stocks> {
+        val toCreate = call.receive<RStock>()
+        val created = service.createStock(toCreate.domain())
+        call.respond(created.dto())
+    }
+
+    get<Stocks.Symbol> {
+        val found = service.getStock(it.symbol)
+        if (found != null) {
+            call.respond(found.dto())
+        } else {
+            call.respond(HttpStatusCode.NotFound)
+        }
+    }
+}
 
 fun Route.configureFetchQueryRoutes() {
     val service: FetchQueryService by inject()
@@ -33,6 +52,25 @@ fun Route.configureFetchQueryRoutes() {
 
     get<FetchQueries.Id> {
         val found = service.getFetchQuery(it.id)
+        if (found != null) {
+            call.respond(found.dto())
+        } else {
+            call.respond(HttpStatusCode.NotFound)
+        }
+    }
+}
+
+fun Route.configureMarketIndexRoutes() {
+    val service: MarketIndexService by inject()
+
+    post<MarketIndexes> {
+        val toCreate = call.receive<RMarketIndex>()
+        val created = service.createMarketIndex(toCreate.domain())
+        call.respond(created.dto())
+    }
+
+    get<MarketIndexes.Name> {
+        val found = service.getMarketIndex(it.name)
         if (found != null) {
             call.respond(found.dto())
         } else {
@@ -65,16 +103,9 @@ fun Application.configureStockApiRoutes() {
             }
 
 
-            post<Indexes> {
-                call.respondText { "POST indexes" }
-            }
-
-            get<Indexes.Name> {
-                call.respondText { "GET indexes/${it.name}" }
-            }
-
-
+            configureStockRoutes()
             configureFetchQueryRoutes()
+            configureMarketIndexRoutes()
         }
     }
 }

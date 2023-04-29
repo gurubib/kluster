@@ -14,7 +14,6 @@ interface ExposedCrudRepository<ID: Comparable<ID>, T: Entity<Int>> {
     suspend fun find(op: SqlExpressionBuilder.()-> Op<Boolean>): List<T>
     suspend fun find(query: ExposedQueryBuilder): List<T>
     suspend fun findById(id: Int): T?
-    suspend fun findByUuid(uuid: String): T?
 
     suspend fun countAll(): Long
     suspend fun count(op: SqlExpressionBuilder.()-> Op<Boolean>): Long

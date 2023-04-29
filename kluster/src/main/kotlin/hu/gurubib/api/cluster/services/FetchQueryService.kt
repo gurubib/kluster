@@ -9,7 +9,6 @@ import hu.gurubib.domain.stock.models.toFetchQuery
 import hu.gurubib.domain.stock.services.StockFetcherService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 interface FetchQueryService {

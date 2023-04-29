@@ -11,10 +11,10 @@ class Stocks {
     }
 }
 
-@Resource("/indexes")
-class Indexes {
+@Resource("/market-indexes")
+class MarketIndexes {
     @Resource("{name}")
-    class Name(val parent: Indexes = Indexes(), val name: String)
+    class Name(val parent: MarketIndexes = MarketIndexes(), val name: String)
 }
 
 @Resource("/fetch-queries")
