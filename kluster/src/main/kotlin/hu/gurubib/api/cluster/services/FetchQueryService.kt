@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 interface FetchQueryService {
-    suspend fun createFetchQuery(req: CreateFetchQueryReq): FetchQuery
+    suspend fun createFetchQuery(req: CreateFetchQueryReq): List<FetchQuery>
     suspend fun getFetchQuery(uuid: String): FetchQuery?
 }
 
@@ -20,15 +20,20 @@ class FetchQueryServiceImpl(
     private val repository: FetchQueryRepository,
     private val stockFetcherService: StockFetcherService,
 ) : FetchQueryService {
-    override suspend fun createFetchQuery(req: CreateFetchQueryReq): FetchQuery {
-        val toCreate = req.toFetchQuery()
-        val created = repository.createTransactional(toCreate.toInitializer()).domain()
+    override suspend fun createFetchQuery(req: CreateFetchQueryReq): List<FetchQuery> {
+        val entitiesToCreate = req.toFetchQuery()
 
-        CoroutineScope(Dispatchers.IO).launch(Dispatchers.IO) {
-            stockFetcherService.fetch(created.uuid)
+        val createdEntities = entitiesToCreate.map {
+            repository.createTransactional(it.toInitializer()).domain()
         }
 
-        return created
+        CoroutineScope(Dispatchers.IO).launch {
+            createdEntities.forEach {
+                stockFetcherService.fetch(it.uuid)
+            }
+        }
+
+        return createdEntities
     }
 
     override suspend fun getFetchQuery(uuid: String): FetchQuery? = repository.findByUuid(uuid)?.domain()

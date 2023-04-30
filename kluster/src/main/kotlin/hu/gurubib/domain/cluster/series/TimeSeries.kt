@@ -1,13 +1,15 @@
 package hu.gurubib.domain.cluster.series
 
-import java.util.UUID
 import kotlin.math.abs
+import kotlin.random.Random
 
 const val EPSILON = 0.000001
 
+private const val VOID_SYMBOL = "VOID"
+
 data class TimeSeries(
     val points: List<Vec2>,
-    val id: String = UUID.randomUUID().toString(),
+    val symbol: String,
 ) {
     val length get() = points.size
     val values get() = points.map { it.y }
@@ -35,13 +37,13 @@ data class TimeSeries(
             "Range (${range.first}..${range.last}) is out of bounds for series (length: $length)!"
         }
 
-        return TimeSeries(points.slice(range))
+        return TimeSeries(points.slice(range), symbol)
     }
 
     fun subSeries(indices: List<Int>): TimeSeries {
         require(indices.size <= length) { "Too many indices (num: ${indices.size}) for series (length: $length)" }
         require(indices.last() < length) {"Index out of bounds (${indices.last()}) for series (length: $length)" }
-        return TimeSeries(points.filterIndexed { i, _ -> indices.contains(i) })
+        return TimeSeries(points.filterIndexed { i, _ -> indices.contains(i) }, symbol)
     }
 
     fun toList() = points
@@ -59,7 +61,7 @@ fun TimeSeries.normalised(): TimeSeries {
         Vec2(xN, yN)
     }
 
-    return TimeSeries(normalizedPoints)
+    return TimeSeries(normalizedPoints, symbol)
 }
 
 fun TimeSeries.indexOfFarthestFrom(
@@ -77,8 +79,15 @@ fun TimeSeries.withinEpsilon(other: TimeSeries): Boolean {
     return (0 until length).all { t -> abs(values[t] - other.values[t]) < EPSILON }
 }
 
-fun fromValues(values: List<Double>): TimeSeries =
-    TimeSeries(values.mapIndexed { i, v -> Vec2(i.toDouble(), v) })
+fun TimeSeries.withSymbol(s: String): TimeSeries = TimeSeries(
+    points = points,
+    symbol = s,
+)
+
+private fun fromValues(values: List<Double>): TimeSeries = TimeSeries(values.mapIndexed { i, v -> Vec2(i.toDouble(), v) }, VOID_SYMBOL)
+
+fun fromValuesWithSymbol(values: List<Double>, symbol: String): TimeSeries =
+    TimeSeries(values.mapIndexed { i, v -> Vec2(i.toDouble(), v) }, symbol)
 
 fun reduceTimeSeries(objects: List<TimeSeries>, reducer: (values: List<Double>) -> Double): TimeSeries {
     val length = objects.firstOrNull()?.length ?: 0
@@ -86,3 +95,20 @@ fun reduceTimeSeries(objects: List<TimeSeries>, reducer: (values: List<Double>) 
 }
 
 fun reduceToAverage(values: List<Double>): Double = values.average()
+
+fun generateConstrainedBy(objects: List<TimeSeries>, n: Int): List<TimeSeries> {
+    require(allHaveSameLength(objects)) { "All time series must have the same length!" }
+
+    val length = objects.firstOrNull()?.length ?: 0
+    val maxes = (0 until length).map { t -> objects.maxOfOrNull { it.values[t] } ?: 0.0 }
+    val mins = (0 until length).map { t -> objects.minOfOrNull { it.values[t] } ?: 0.0 }
+
+    return (0 until n).map {
+        fromValues((0 until length).map { t -> Random.nextDouble(mins[t], maxes[t]) })
+    }
+}
+
+private fun allHaveSameLength(objects: List<TimeSeries>): Boolean {
+    val length = objects.firstOrNull()?.length ?: 0
+    return objects.all { it.length == length }
+}

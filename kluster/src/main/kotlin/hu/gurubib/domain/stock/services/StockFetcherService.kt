@@ -4,6 +4,7 @@ import hu.gurubib.dao.models.PFetchQuery
 import hu.gurubib.dao.models.toPPriceInitializer
 import hu.gurubib.dao.repositories.FetchQueryRepository
 import hu.gurubib.dao.repositories.PriceRepository
+import hu.gurubib.dao.repositories.StockRepository
 import hu.gurubib.domain.stock.models.FetchStatus
 import hu.gurubib.domain.stock.models.Price
 import hu.gurubib.domain.stock.models.PriceCursor
@@ -33,13 +34,16 @@ interface StockFetcherService {
 class StockFetcherServiceImpl(
     private val fetchQueryRepository: FetchQueryRepository,
     private val priceRepository: PriceRepository,
+    private val stockRepository: StockRepository,
 ) : StockFetcherService {
     override suspend fun fetch(fetchQueryUuid: String) {
         val fetchQuery = fetchQueryRepository.findByUuid(fetchQueryUuid) ?:
             throw IllegalArgumentException("Invalid fetch query uuid: (${fetchQueryUuid})!")
+        val stock = stockRepository.findBySymbol(fetchQuery.symbol) ?:
+            throw IllegalArgumentException("Invalid fetch query symbol: (${fetchQuery.symbol})!")
 
         try {
-            fetchAndSaveStock(fetchQuery, 1)
+            fetchAndSaveStock(fetchQuery, stock.id.value)
         } catch (e: Exception) {
             e.printStackTrace()
             fetchQueryRepository.updateTransactional(fetchQuery) { status = FetchStatus.STOPPED.name }
@@ -146,11 +150,11 @@ private fun YahooPriceData.toPrice(
     return Price(
         uuid = uuid(),
         symbol = symbol,
-        open = open.toDouble(),
-        high =  high.toDouble(),
-        low = low.toDouble(),
-        close = close.toDouble(),
-        volume = volume.toDouble(),
+        open = open.toDoubleOrNull() ?: -1.0,
+        high =  high.toDoubleOrNull() ?: -1.0,
+        low = low.toDoubleOrNull() ?: -1.0,
+        close = close.toDoubleOrNull() ?: -1.0,
+        volume = volume.toDoubleOrNull() ?: -1.0,
         date = date,
         sequenceId = newCursor(date.atStartOfDay()).value
     )

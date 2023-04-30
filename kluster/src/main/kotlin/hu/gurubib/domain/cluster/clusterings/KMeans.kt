@@ -5,7 +5,7 @@ import hu.gurubib.domain.cluster.series.*
 import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
-private const val MAX_ITERATION_COUNT = 1000
+private const val MAX_ITERATION_COUNT = 10
 
 typealias ClusteringAlgorithm = (objects: List<TimeSeries>, dist: DistanceMeasure, k: Int) -> Map<TimeSeries, List<TimeSeries>>
 
@@ -20,7 +20,7 @@ fun kMeans(
     dist: DistanceMeasure,
     k: Int,
 ): Map<TimeSeries, List<TimeSeries>> {
-    val initialCentroids = generateCentroids(objects, k)
+    val initialCentroids = generateConstrainedBy(objects, k)
     var previousCentroids = initialCentroids
     var clusters = assignToClusters(objects, initialCentroids, dist)
 
@@ -46,23 +46,6 @@ fun kMeans(
     return clusters
 }
 
-fun generateCentroids(objects: List<TimeSeries>, k: Int): List<TimeSeries> {
-    require(allHaveSameLength(objects)) { "All time series must have the same length!" }
-
-    val length = objects.firstOrNull()?.length ?: 0
-    val maxes = (0 until length).map { t -> objects.maxOfOrNull { it.values[t] } ?: 0.0 }
-    val mins = (0 until length).map { t -> objects.minOfOrNull { it.values[t] } ?: 0.0 }
-
-    return (0 until k).map {
-        fromValues((0 until length).map { t -> Random.nextDouble(mins[t], maxes[t]) })
-    }
-}
-
-private fun allHaveSameLength(objects: List<TimeSeries>): Boolean {
-    val length = objects.firstOrNull()?.length ?: 0
-    return objects.all { it.length == length }
-}
-
 private fun nearestCentroid(o: TimeSeries, centroids: List<TimeSeries>, dist: DistanceMeasure): TimeSeries =
     centroids.indices.minBy { i -> dist(o, centroids[i]) }.let { centroids[it] }
 
@@ -82,6 +65,7 @@ fun assignToClusters(
 
 
 fun relocateCentroids(clusters: Map<TimeSeries, List<TimeSeries>>): Pair<List<TimeSeries>, Boolean> {
+    val allObjects = clusters.values.flatten()
     var relocated = false
 
     val relocatedCentroids = clusters.map { (centroid, objects) ->
@@ -90,7 +74,8 @@ fun relocateCentroids(clusters: Map<TimeSeries, List<TimeSeries>>): Pair<List<Ti
             relocated = relocated || !newCentroid.withinEpsilon(centroid)
             newCentroid
         } else {
-            centroid
+            relocated = true
+            generateConstrainedBy(allObjects, 1).first()
         }
     }
 

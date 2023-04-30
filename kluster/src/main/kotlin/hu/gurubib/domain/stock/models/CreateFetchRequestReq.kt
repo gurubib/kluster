@@ -5,14 +5,14 @@ import hu.gurubib.util.uuid
 import java.time.LocalDateTime
 
 data class CreateFetchQueryReq(
-    val symbol: String,
+    val symbols: List<String>,
     val from: LocalDateTime,
     val to: LocalDateTime,
 )
 
-fun CreateFetchQueryReq.toFetchQuery(): FetchQuery {
+fun CreateFetchQueryReq.toFetchQuery(): List<FetchQuery> = symbols.map { symbol ->
     val now = now()
-    return FetchQuery(
+    FetchQuery(
         uuid = uuid(),
         symbol = symbol,
         from = from,

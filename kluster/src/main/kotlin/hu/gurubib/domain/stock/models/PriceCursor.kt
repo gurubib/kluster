@@ -1,5 +1,6 @@
 package hu.gurubib.domain.stock.models
 
+import hu.gurubib.dao.models.PStock
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -44,4 +45,4 @@ fun nowCursor(cursorId: Int): PriceCursor = LocalDateTime.now().toPriceCursor(cu
 fun PriceCursor.toLocalDateTime(): LocalDateTime =
     LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), cursorDefaultZoneOffset)
 
-//fun cursorIdOf(chart: PDailyChart): Int = chart.id.value
+fun cursorIdOf(chart: PStock): Int = chart.id.value

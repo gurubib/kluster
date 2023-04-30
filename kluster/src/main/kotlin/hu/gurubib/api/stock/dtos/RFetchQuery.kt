@@ -7,14 +7,14 @@ import java.time.LocalDateTime
 
 @Serializable
 data class RFetchQuery(
-    val uuid: String?,
-    val symbol: String?,
-    @Serializable(with = LocalDateTimeSerializer::class) val from: LocalDateTime?,
-    @Serializable(with = LocalDateTimeSerializer::class) val to: LocalDateTime?,
-    val status: String?,
+    val uuid: String,
+    val symbol: String,
+    @Serializable(with = LocalDateTimeSerializer::class) val from: LocalDateTime,
+    @Serializable(with = LocalDateTimeSerializer::class) val to: LocalDateTime,
+    val status: String,
     @Serializable(with = LocalDateTimeSerializer::class) val finishedAt: LocalDateTime?,
-    @Serializable(with = LocalDateTimeSerializer::class) val createdAt: LocalDateTime?,
-    @Serializable(with = LocalDateTimeSerializer::class) val updatedAt: LocalDateTime?,
+    @Serializable(with = LocalDateTimeSerializer::class) val createdAt: LocalDateTime,
+    @Serializable(with = LocalDateTimeSerializer::class) val updatedAt: LocalDateTime,
 )
 
 fun FetchQuery.dto() = RFetchQuery(

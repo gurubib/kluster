@@ -32,13 +32,13 @@ class PriceRepositoryImpl(
 
     override suspend fun find(op: SqlExpressionBuilder.() -> Op<Boolean>) = newSuspendedTransaction {
         findWithLimitAndOffset(0, 0) {
-            PPrice.find(op).orderBy(Prices.date to ASC)
+            PPrice.find(op).orderBy(Prices.sequenceId to ASC)
         }
     }
 
     override suspend fun find(query: ExposedQueryBuilder) = newSuspendedTransaction {
         findWithLimitAndOffset(query.limit, query.offset) {
-            PPrice.find(query.buildQueryExpression()).orderBy(Prices.date to ASC)
+            PPrice.find(query.buildQueryExpression()).orderBy(Prices.sequenceId to ASC)
         }
     }
 

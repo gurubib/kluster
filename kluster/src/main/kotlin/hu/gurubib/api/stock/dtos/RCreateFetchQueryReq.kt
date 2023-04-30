@@ -7,13 +7,13 @@ import java.time.LocalDateTime
 
 @Serializable
 data class RCreateFetchQueryReq(
-    val symbol: String,
+    val symbols: List<String>,
     @Serializable(with = LocalDateTimeSerializer::class) val from: LocalDateTime,
     @Serializable(with = LocalDateTimeSerializer::class) val to: LocalDateTime,
 )
 
 fun RCreateFetchQueryReq.domain() = CreateFetchQueryReq(
-    symbol = symbol,
+    symbols = symbols,
     from = from,
     to = to,
 )

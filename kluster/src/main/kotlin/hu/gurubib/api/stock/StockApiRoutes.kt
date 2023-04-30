@@ -42,8 +42,8 @@ fun Route.configureFetchQueryRoutes() {
 
     post<FetchQueries> {
         val req = call.receive<RCreateFetchQueryReq>()
-        val created = service.createFetchQuery(req.domain())
-        call.respond(created.dto())
+        val createdEntities = service.createFetchQuery(req.domain()).map { it.dto() }
+        call.respond(createdEntities)
     }
 
     get<FetchQueries> {
