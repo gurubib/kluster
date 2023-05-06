@@ -1,11 +1,10 @@
 package hu.gurubib.domain.cluster.series
 
+import java.util.UUID
 import kotlin.math.abs
 import kotlin.random.Random
 
 const val EPSILON = 0.000001
-
-private const val VOID_SYMBOL = "VOID"
 
 data class TimeSeries(
     val points: List<Vec2>,
@@ -84,7 +83,7 @@ fun TimeSeries.withSymbol(s: String): TimeSeries = TimeSeries(
     symbol = s,
 )
 
-private fun fromValues(values: List<Double>): TimeSeries = TimeSeries(values.mapIndexed { i, v -> Vec2(i.toDouble(), v) }, VOID_SYMBOL)
+private fun fromValues(values: List<Double>): TimeSeries = TimeSeries(values.mapIndexed { i, v -> Vec2(i.toDouble(), v) }, UUID.randomUUID().toString())
 
 fun fromValuesWithSymbol(values: List<Double>, symbol: String): TimeSeries =
     TimeSeries(values.mapIndexed { i, v -> Vec2(i.toDouble(), v) }, symbol)

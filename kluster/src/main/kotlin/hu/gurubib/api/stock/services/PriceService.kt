@@ -1,4 +1,4 @@
-package hu.gurubib.api.cluster.services
+package hu.gurubib.api.stock.services
 
 import java.time.LocalDate
 

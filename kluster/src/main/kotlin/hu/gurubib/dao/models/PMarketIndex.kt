@@ -31,12 +31,12 @@ fun MarketIndex.toInitializer(): PMarketIndex.() -> Unit = {
 }
 
 object MarketIndexConstituents : IntIdTable("market_index_constituents") {
-    val indexName = varchar("index_name", length = 100)
+    val indexName = varchar("index_name", length = 100).index()
     val stockSymbol = varchar("stock_symbol", length = 10)
 }
 
-class PMarketIndexConstituent(id: EntityID<Int>): IntEntity(id) {
-   companion object: IntEntityClass<PMarketIndexConstituent>(MarketIndexConstituents)
+class PMarketIndexConstituent(id: EntityID<Int>) : IntEntity(id) {
+   companion object : IntEntityClass<PMarketIndexConstituent>(MarketIndexConstituents)
 
     var indexName by MarketIndexConstituents.indexName.index()
     var stockSymbol by MarketIndexConstituents.stockSymbol

@@ -1,4 +1,4 @@
-package hu.gurubib.api.cluster.services
+package hu.gurubib.api.stock.services
 
 import hu.gurubib.dao.models.domain
 import hu.gurubib.dao.models.toInitializer

@@ -1,6 +1,7 @@
 package hu.gurubib.modules
 
 import hu.gurubib.api.cluster.services.*
+import hu.gurubib.api.stock.services.*
 import hu.gurubib.dao.repositories.*
 import hu.gurubib.domain.stock.services.StockFetcherService
 import hu.gurubib.domain.stock.services.StockFetcherServiceImpl
@@ -16,11 +17,12 @@ fun klusterAppModule(config: ApplicationConfig, db: Database) = module {
     single<PriceRepository> { PriceRepositoryImpl(db) }
     single<StockRepository> { StockRepositoryImpl(db) }
     single<MarketIndexRepository> { MarketIndexRepositoryImpl(db) }
+    single<ClusteringRepository> { ClusteringRepositoryImpl(db) }
 
     single<StockFetcherService> { StockFetcherServiceImpl(get(), get(), get()) }
 
     single<FetchQueryService> { FetchQueryServiceImpl(get(), get()) }
-    single<ClusterService> { ClusterServiceImpl(get(), get()) }
+    single<ClusterService> { ClusterServiceImpl(get(), get(), get()) }
     single<StockService> { StockServiceImpl(get()) }
     single<MarketIndexService> { MarketIndexServiceImpl(get()) }
 }

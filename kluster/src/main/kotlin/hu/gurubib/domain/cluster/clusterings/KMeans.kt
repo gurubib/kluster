@@ -2,17 +2,18 @@ package hu.gurubib.domain.cluster.clusterings
 
 import hu.gurubib.domain.cluster.distances.DistanceMeasure
 import hu.gurubib.domain.cluster.series.*
-import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
 private const val MAX_ITERATION_COUNT = 10
 
 typealias ClusteringAlgorithm = (objects: List<TimeSeries>, dist: DistanceMeasure, k: Int) -> Map<TimeSeries, List<TimeSeries>>
+typealias CentroidProducer = (objects: List<TimeSeries>) -> TimeSeries
 
 enum class Clusterings(
     val clust: ClusteringAlgorithm,
+    val centroidOf: CentroidProducer,
 ) {
-    KMEANS(::kMeans)
+    KMEANS(::kMeans, ::kMeansCentroidProducer)
 }
 
 fun kMeans(
@@ -81,3 +82,5 @@ fun relocateCentroids(clusters: Map<TimeSeries, List<TimeSeries>>): Pair<List<Ti
 
     return Pair(relocatedCentroids, relocated)
 }
+
+fun kMeansCentroidProducer(objects: List<TimeSeries>): TimeSeries = reduceTimeSeries(objects, ::reduceToAverage)

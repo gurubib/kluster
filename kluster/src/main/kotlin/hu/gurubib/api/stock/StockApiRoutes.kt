@@ -1,8 +1,8 @@
 package hu.gurubib.api.stock
 
-import hu.gurubib.api.cluster.services.FetchQueryService
-import hu.gurubib.api.cluster.services.MarketIndexService
-import hu.gurubib.api.cluster.services.StockService
+import hu.gurubib.api.stock.services.FetchQueryService
+import hu.gurubib.api.stock.services.MarketIndexService
+import hu.gurubib.api.stock.services.StockService
 import hu.gurubib.api.stock.dtos.*
 import hu.gurubib.plugins.API_ROOT_PATH
 import io.ktor.http.*
