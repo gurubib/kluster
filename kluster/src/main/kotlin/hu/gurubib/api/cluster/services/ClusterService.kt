@@ -1,27 +1,26 @@
 package hu.gurubib.api.cluster.services
 
-import hu.gurubib.dao.models.PStock
-import hu.gurubib.dao.models.Prices
-import hu.gurubib.dao.models.domain
-import hu.gurubib.dao.models.toInitializer
+import hu.gurubib.dao.models.*
 import hu.gurubib.dao.repositories.ClusteringRepository
 import hu.gurubib.dao.repositories.PriceRepository
 import hu.gurubib.dao.repositories.StockRepository
 import hu.gurubib.domain.cluster.clusterings.Clusterings
 import hu.gurubib.domain.cluster.distances.Distances
-import hu.gurubib.domain.cluster.metrics.calculateSilhouette
+import hu.gurubib.domain.cluster.metrics.ClusteringMetrics
 import hu.gurubib.domain.cluster.normalisations.Normalisations
 import hu.gurubib.domain.cluster.series.TimeSeries
 import hu.gurubib.domain.cluster.series.fromValuesWithSymbol
 import hu.gurubib.domain.stock.models.*
+import hu.gurubib.domain.stock.models.Metric
 import hu.gurubib.util.enumValueOrDefault
 import org.jetbrains.exposed.sql.and
 import java.time.LocalDate
 
 interface ClusterService {
     suspend fun createClustering(req: CreateClusteringReq): Clustering
+    suspend fun getClusters(clusteringUuid: String): List<List<String>>
     suspend fun createLabelling(labelling: Labelling): List<List<Stock>>
-    suspend fun getMetric(clusteringUuid: String, metricName: String): Metric
+    suspend fun getMetrics(clusteringUuid: String, metricName: String): Metric
 }
 
 class ClusterServiceImpl(
@@ -46,6 +45,15 @@ class ClusterServiceImpl(
         return clustering
     }
 
+    override suspend fun getClusters(clusteringUuid: String): List<List<String>> {
+        val clustering = clusteringRepository.findByUuid(clusteringUuid)?.domain()
+            ?: throw IllegalArgumentException("No clustering with UUID (${clusteringUuid})!")
+
+        val clusteredObjects = clusteringRepository.findClusteredObjectsFor(clustering.uuid)
+
+        return clusteredObjects.groupBy({ it.clusterId }) { it.objectId }.values.toList()
+    }
+
     override suspend fun createLabelling(labelling: Labelling): List<List<Stock>> {
         return labelling.clusters.map { cluster ->
             cluster.map { symbol ->
@@ -55,23 +63,43 @@ class ClusterServiceImpl(
         }
     }
 
-    override suspend fun getMetric(clusteringUuid: String, metricName: String): Metric {
-        val clustering = clusteringRepository.findByUuid(clusteringUuid)?.domain() ?:
-            throw IllegalArgumentException("No clustering with UUID (${clusteringUuid})!")
+    override suspend fun getMetrics(clusteringUuid: String, metricName: String): Metric {
+        val clustering = clusteringRepository.findByUuid(clusteringUuid)?.domain()
+            ?: throw IllegalArgumentException("No clustering with UUID (${clusteringUuid})!")
 
+        val metric = parseClusteringMetric(metricName)
+        val metricValue = calculateMetricValue(clustering, metric)
+
+        return Metric(
+            clusteringUuid = clustering.uuid,
+            name = metricName,
+            value = metricValue
+        )
+    }
+
+    private suspend fun calculateMetricValue(clustering: Clustering, metric: ClusteringMetrics): Double {
         val clusteredObjects = clusteringRepository.findClusteredObjectsFor(clustering.uuid)
         val (normalisation, distance, algorithm) = parseParameters(clustering)
         val clusters = clusteredObjects.groupBy({ it.clusterId }) { it.objectId }.values.map { cluster ->
             getTimeSeries(cluster, clustering.from, clustering.to).map { normalisation.method(it) }
-        }
+        }.associateBy { algorithm.centroidOf(it) }
 
-        val silhouetteValuesByClusters = calculateSilhouette(clusters, algorithm.centroidOf, distance.dist)
+        return metric.calc(clusters, distance.dist)
 
-        return Metric(
-            clusteringUuid = clustering.uuid,
-            name = "SILHOUETTE",
-            value = silhouetteValuesByClusters.map { cluster -> cluster.map { it.second }.average() }.average(),
-        )
+//        val metrics = clusteringRepository.findMetricsFor(clustering.uuid)
+//        if (metrics.isNotEmpty()) {
+//            return metrics
+//        }
+//
+//        val clusteredObjects = clusteringRepository.findClusteredObjectsFor(clustering.uuid)
+//        val (normalisation, distance, algorithm) = parseParameters(clustering)
+//        val clusters = clusteredObjects.groupBy({ it.clusterId }) { it.objectId }.values.map { cluster ->
+//            getTimeSeries(cluster, clustering.from, clustering.to).map { normalisation.method(it) }
+//        }
+//
+//        //TODO: choose calculate metric based on metricName
+//        val metricValues = calculateSilhouette(clusters, algorithm.centroidOf, distance.dist).flatten()
+//        return clusteringRepository.createMetricsFor(clustering.uuid, metricName, metricValues)
     }
 
     private fun checkObjects(objects: List<TimeSeries>) {
@@ -132,4 +160,5 @@ class ClusterServiceImpl(
 
     private fun parseAlgorithm(clustering: String): Clusterings = enumValueOrDefault(clustering, Clusterings.KMEANS)
 
+    private fun parseClusteringMetric(name: String): ClusteringMetrics = enumValueOrDefault(name.uppercase(), ClusteringMetrics.CH)
 }

@@ -6,8 +6,13 @@ import io.ktor.resources.*
 class Clusterings {
     @Resource("{id}")
     class Id(val parent: Clusterings = Clusterings(), val id: String) {
+        @Resource("clusters")
+        class Clusters(val parent: Id)
         @Resource("metrics")
-        class Metrics(val parent: Id, val name: String = "SILHOUETTE")
+        class Metrics(val parent: Id) {
+            @Resource("{name}")
+            class Name(val parent: Metrics, val name: String)
+        }
     }
 }
 

@@ -103,7 +103,13 @@ fun generateConstrainedBy(objects: List<TimeSeries>, n: Int): List<TimeSeries> {
     val mins = (0 until length).map { t -> objects.minOfOrNull { it.values[t] } ?: 0.0 }
 
     return (0 until n).map {
-        fromValues((0 until length).map { t -> Random.nextDouble(mins[t], maxes[t]) })
+        fromValues((0 until length).map { t ->
+            if (mins[t] != maxes[t]) {
+                Random.nextDouble(mins[t], maxes[t])
+            } else {
+                mins[t]
+            }
+        })
     }
 }
 

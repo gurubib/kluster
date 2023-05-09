@@ -1,9 +1,6 @@
 package hu.gurubib.dao.repositories
 
-import hu.gurubib.dao.models.ClusteredObjects
-import hu.gurubib.dao.models.Clusterings
-import hu.gurubib.dao.models.PClusteredObject
-import hu.gurubib.dao.models.PClustering
+import hu.gurubib.dao.models.*
 import hu.gurubib.util.dao.ExposedQueryBuilder
 import hu.gurubib.util.dao.ExposedQueryExpressionHolder
 import org.jetbrains.exposed.sql.Database
@@ -16,7 +13,9 @@ interface ClusteringRepository : ExposedCrudRepository<Int, PClustering> {
 
     suspend fun findByUuid(uuid: String): PClustering?
     suspend fun createClusteredObjectsFor(uuid: String, clusters: List<List<String>>): List<PClusteredObject>
+    suspend fun createMetricsFor(uuid: String, name: String, metrics: List<Pair<String, Double>>): List<PMetric>
     suspend fun findClusteredObjectsFor(uuid: String): List<PClusteredObject>
+    suspend fun findMetricsFor(uuid: String): List<PMetric>
 }
 
 class ClusteringRepositoryImpl(
@@ -37,6 +36,18 @@ class ClusteringRepositoryImpl(
                         objectId = o
                         clusterId = ('A' + i).toString()
                     }
+                }
+            }
+        }
+
+    override suspend fun createMetricsFor(uuid: String, name: String, metrics: List<Pair<String, Double>>) =
+        newSuspendedTransaction {
+            metrics.map { m ->
+                PMetric.new {
+                    clusteringUuid = uuid
+                    objectId = m.first
+                    metricName = name
+                    metricValue = m.second
                 }
             }
         }
@@ -67,6 +78,10 @@ class ClusteringRepositoryImpl(
 
     override suspend fun findClusteredObjectsFor(uuid: String) = newSuspendedTransaction {
         PClusteredObject.find { ClusteredObjects.clusteringUuid eq uuid }.toList()
+    }
+
+    override suspend fun findMetricsFor(uuid: String) = newSuspendedTransaction {
+        PMetric.find{ Metrics.clusteringUuid eq uuid }.toList()
     }
 
     override suspend fun countAll() = newSuspendedTransaction {

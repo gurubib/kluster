@@ -42,6 +42,7 @@ private fun createAndConfigureDB(config: ApplicationConfig): Database {
 //        )
         SchemaUtils.create(Clusterings)
         SchemaUtils.create(ClusteredObjects)
+        SchemaUtils.create(Metrics)
     }
 
     return db

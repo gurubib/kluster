@@ -1,12 +1,12 @@
 package hu.gurubib.dao.models
 
 import hu.gurubib.domain.stock.models.Clustering
+import hu.gurubib.domain.stock.models.Metric
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.javatime.date
-import org.jetbrains.exposed.sql.javatime.datetime
 
 object Clusterings : IntIdTable("clusterings") {
     val uuid = varchar("uuid", 36).uniqueIndex()
@@ -51,7 +51,7 @@ fun Clustering.toInitializer(): PClustering.() -> Unit = {
 }
 
 object ClusteredObjects: IntIdTable("clustered_objects") {
-    val clusteringUuid = varchar("uuid", 36).index()
+    val clusteringUuid = varchar("clustering_uuid", 36).index()
     val objectId = varchar("object_id", length = 10)
     val clusterId = varchar("cluster_id", length = 10)
 }
@@ -62,4 +62,20 @@ class PClusteredObject(id: EntityID<Int>) : IntEntity(id) {
     var clusteringUuid by ClusteredObjects.clusteringUuid
     var objectId by ClusteredObjects.objectId
     var clusterId by ClusteredObjects.clusterId
+}
+
+object Metrics: IntIdTable("metrics") {
+    val clusteringUuid = varchar("clustering_uuid", 36).index()
+    val objectId = varchar("object_id", 10)
+    val metricName = varchar("metric_name", 50)
+    val metricValue = double("metric_value")
+}
+
+class PMetric(id: EntityID<Int>) : IntEntity(id) {
+    companion object : IntEntityClass<PMetric>(Metrics)
+
+    var clusteringUuid by Metrics.clusteringUuid
+    var objectId by Metrics.objectId
+    var metricName by Metrics.metricName
+    var metricValue by Metrics.metricValue
 }

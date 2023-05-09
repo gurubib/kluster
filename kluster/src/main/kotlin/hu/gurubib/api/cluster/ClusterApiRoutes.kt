@@ -34,8 +34,13 @@ fun Application.configureClusterApiRoutes() {
                 call.respond(labelling)
             }
 
-            get<Clusterings.Id.Metrics> {
-                val metric = service.getMetric(it.parent.id, it.name)
+            get<Clusterings.Id.Clusters> {
+                val clusters = service.getClusters(it.parent.id)
+                call.respond(clusters)
+            }
+
+            get<Clusterings.Id.Metrics.Name> {
+                val metric = service.getMetrics(it.parent.parent.id, it.name)
                 call.respond(metric.dto())
             }
         }
