@@ -5,3 +5,10 @@ data class Metric(
     val name: String,
     val value: Double,
 )
+
+data class SimilarityMetric(
+    val oneClusteringUuid: String,
+    val otherClusteringUuid: String,
+    val name: String,
+    val value: Double,
+)

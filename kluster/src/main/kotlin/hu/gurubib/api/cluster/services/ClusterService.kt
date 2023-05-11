@@ -7,6 +7,7 @@ import hu.gurubib.dao.repositories.StockRepository
 import hu.gurubib.domain.cluster.clusterings.Clusterings
 import hu.gurubib.domain.cluster.distances.Distances
 import hu.gurubib.domain.cluster.metrics.ClusteringMetrics
+import hu.gurubib.domain.cluster.metrics.ClusteringSimilarityMetrics
 import hu.gurubib.domain.cluster.normalisations.Normalisations
 import hu.gurubib.domain.cluster.series.TimeSeries
 import hu.gurubib.domain.cluster.series.fromValuesWithSymbol
@@ -21,6 +22,12 @@ interface ClusterService {
     suspend fun getClusters(clusteringUuid: String): List<List<String>>
     suspend fun createLabelling(labelling: Labelling): List<List<Stock>>
     suspend fun getMetrics(clusteringUuid: String, metricName: String): Metric
+
+    suspend fun getSimilarityMetric(
+        oneClusteringUuid: String,
+        otherClusteringUuid: String,
+        metricName: String
+    ): SimilarityMetric
 }
 
 class ClusterServiceImpl(
@@ -102,6 +109,41 @@ class ClusterServiceImpl(
 //        return clusteringRepository.createMetricsFor(clustering.uuid, metricName, metricValues)
     }
 
+    override suspend fun getSimilarityMetric(
+        oneClusteringUuid: String,
+        otherClusteringUuid: String,
+        metricName: String
+    ): SimilarityMetric {
+        val oneClustering = clusteringRepository.findByUuid(oneClusteringUuid)?.domain()
+            ?: throw IllegalArgumentException("No clustering with UUID (${oneClusteringUuid})!")
+        val otherClustering = clusteringRepository.findByUuid(otherClusteringUuid)?.domain()
+            ?: throw IllegalArgumentException("No clustering with UUID (${otherClusteringUuid})!")
+
+
+        val metric = parseClusteringSimilarityMetric(metricName)
+        val metricValue = calculateSimilarityMetricValue(oneClustering, otherClustering, metric)
+
+        return SimilarityMetric(
+            oneClusteringUuid = oneClusteringUuid,
+            otherClusteringUuid = otherClusteringUuid,
+            name = metricName,
+            value = metricValue
+        )
+    }
+
+    private suspend fun calculateSimilarityMetricValue(
+        oneClustering: Clustering,
+        otherClustering: Clustering,
+        metric: ClusteringSimilarityMetrics,
+    ): Double {
+        val objectsForOne = clusteringRepository.findClusteredObjectsFor(oneClustering.uuid)
+        val objectsForOther = clusteringRepository.findClusteredObjectsFor(otherClustering.uuid)
+
+        require(objectsForOne.map { it.objectId }.toSet() == objectsForOther.map { it.objectId }.toSet()) { "Clusterings must have been run on the same number of objects!" }
+
+        return metric.calc(objectsForOne, objectsForOther)
+    }
+
     private fun checkObjects(objects: List<TimeSeries>) {
         val length = objects.firstOrNull()?.length
         objects.forEach {
@@ -160,5 +202,9 @@ class ClusterServiceImpl(
 
     private fun parseAlgorithm(clustering: String): Clusterings = enumValueOrDefault(clustering, Clusterings.KMEANS)
 
-    private fun parseClusteringMetric(name: String): ClusteringMetrics = enumValueOrDefault(name.uppercase(), ClusteringMetrics.CH)
+    private fun parseClusteringMetric(name: String): ClusteringMetrics =
+        enumValueOrDefault(name.uppercase(), ClusteringMetrics.CH)
+
+    private fun parseClusteringSimilarityMetric(name: String): ClusteringSimilarityMetrics =
+        enumValueOrDefault(name.uppercase(), ClusteringSimilarityMetrics.RI)
 }

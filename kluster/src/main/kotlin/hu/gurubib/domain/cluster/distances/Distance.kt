@@ -26,7 +26,7 @@ fun euclideanDistance(one: TimeSeries, other: TimeSeries): Double {
     return sqrt(sumSquared)
 }
 
-fun dtw(one: TimeSeries, other: TimeSeries, window: Int = 10): Double {
+fun dtw(one: TimeSeries, other: TimeSeries, window: Int = 20): Double {
     val n = one.length
     val m = other.length
     val w = max(window, abs(n - m))

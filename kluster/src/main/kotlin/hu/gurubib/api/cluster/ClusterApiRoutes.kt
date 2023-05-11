@@ -43,6 +43,11 @@ fun Application.configureClusterApiRoutes() {
                 val metric = service.getMetrics(it.parent.parent.id, it.name)
                 call.respond(metric.dto())
             }
+
+            get<Clusterings.Id.Metrics.Name.Similarity> {
+                val metric = service.getSimilarityMetric(it.parent.parent.parent.id, it.otherId, it.parent.name)
+                call.respond(metric.dto())
+            }
         }
     }
 }

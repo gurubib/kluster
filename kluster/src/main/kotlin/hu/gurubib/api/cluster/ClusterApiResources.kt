@@ -11,7 +11,10 @@ class Clusterings {
         @Resource("metrics")
         class Metrics(val parent: Id) {
             @Resource("{name}")
-            class Name(val parent: Metrics, val name: String)
+            class Name(val parent: Metrics, val name: String) {
+                @Resource("{otherId}")
+                class Similarity(val parent: Name, val otherId: String)
+            }
         }
     }
 }
