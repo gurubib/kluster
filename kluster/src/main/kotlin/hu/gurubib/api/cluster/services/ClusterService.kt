@@ -196,15 +196,15 @@ class ClusterServiceImpl(
     )
 
     private fun parseNormalise(normalisation: String): Normalisations =
-        enumValueOrDefault(normalisation, Normalisations.NORMALISATION)
+        enumValueOf(normalisation)
 
-    private fun parseDistance(distance: String): Distances = enumValueOrDefault(distance, Distances.EUCLIDEAN)
+    private fun parseDistance(distance: String): Distances = enumValueOf(distance)
 
-    private fun parseAlgorithm(clustering: String): Clusterings = enumValueOrDefault(clustering, Clusterings.KMEANS)
+    private fun parseAlgorithm(clustering: String): Clusterings = enumValueOf(clustering)
 
     private fun parseClusteringMetric(name: String): ClusteringMetrics =
-        enumValueOrDefault(name.uppercase(), ClusteringMetrics.CH)
+        enumValueOf(name.uppercase())
 
     private fun parseClusteringSimilarityMetric(name: String): ClusteringSimilarityMetrics =
-        enumValueOrDefault(name.uppercase(), ClusteringSimilarityMetrics.RI)
+        enumValueOf(name.uppercase())
 }

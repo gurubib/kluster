@@ -18,7 +18,7 @@ enum class Clusterings(
     val centroidOf: CentroidProducer,
 ) {
     KMEANS(::kMeans, ::kMeansCentroidProducer),
-    KMEDOID(::kMedoid, ::kMeansCentroidProducer),
+    KMEDOIDS(::kMedoid, ::kMeansCentroidProducer),
 }
 
 fun kMeans(

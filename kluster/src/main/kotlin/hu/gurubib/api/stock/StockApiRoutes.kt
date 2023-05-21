@@ -82,27 +82,6 @@ fun Route.configureMarketIndexRoutes() {
 fun Application.configureStockApiRoutes() {
     routing {
         route(STOCK_API_PATH) {
-            post<Stocks> {
-                call.respondText { "POST stocks" }
-            }
-
-            get<Stocks.Symbol> {
-                call.respondText { "GET stocks/${it.symbol}" }
-            }
-
-            get<Stocks.Symbol.Prices> {
-                val queryParams = if (it.dimension != null) {
-                    "?dimension=${it.dimension}"
-                } else {
-                    ""
-                }
-
-                call.respondText {
-                    "GET stocks/${it.parent.symbol}/prices${queryParams}"
-                }
-            }
-
-
             configureStockRoutes()
             configureFetchQueryRoutes()
             configureMarketIndexRoutes()
